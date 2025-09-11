@@ -153,4 +153,5 @@ with BuildPart() as arch2:
 
 
 show(arch2)
+export_stl(arch2.part,'arch.stl')
 
