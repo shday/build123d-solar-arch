@@ -1,3 +1,4 @@
+from math import cos, atan
 from build123d import *
 from ocp_vscode import *
 
@@ -17,9 +18,10 @@ tube_id = tube_od - wall_thickness * 2
 bend_radius = 5 * tube_od
 rise_rate = 0
 top_support_offset = 0.25 * M
-side_support_offset = 0.5 * M
+side_support_offset = 0.1 * M
 brace_offset = 0.5 * M
 
+side_support_adjustment = (1 - (back_inset/height)) * 30
 
 points = [(0,0,0),
           (back_inset,front_offset,height),
@@ -107,9 +109,9 @@ with BuildPart() as arch2:
 
     with BuildLine() as side_support_frame:
         a1 = frame.line.edges().sort_by(Axis.Z)[0]
-        p1 = a1.position_at(a1.length -0.1*M,position_mode=PositionMode.LENGTH)
+        p1 = a1.position_at(a1.length -side_support_offset - side_support_adjustment,position_mode=PositionMode.LENGTH)
         a2 = back_frame.line.edges().sort_by(Axis.Z)[0]
-        p2 = a2.position_at(a2.length - 0.1 * M,position_mode=PositionMode.LENGTH)
+        p2 = a2.position_at(a2.length - side_support_offset,position_mode=PositionMode.LENGTH)
         l1 = Line([p1,p2])
     with BuildSketch(Plane(origin=l1 @ 0, z_dir=l1 % 0)) as top_support:
         Circle(tube_od/2)
@@ -118,9 +120,9 @@ with BuildPart() as arch2:
 
     with BuildLine() as side_support_frame:
         a1 = frame.line.edges().sort_by(Axis.Z)[0]
-        p1 = a1.position_at(a1.length -0.1*M,position_mode=PositionMode.LENGTH)
+        p1 = a1.position_at(a1.length -side_support_offset - side_support_adjustment,position_mode=PositionMode.LENGTH)
         a2 = back_frame.line.edges().sort_by(Axis.Z)[0]
-        p2 = a2.position_at(a2.length - 0.6*M,position_mode=PositionMode.LENGTH)
+        p2 = a2.position_at(a2.length - side_support_offset - 0.5*M,position_mode=PositionMode.LENGTH)
         l1 = Line([p1,p2])
     with BuildSketch(Plane(origin=l1 @ 0, z_dir=l1 % 0)) as top_support:
         Circle(tube_od/2)
