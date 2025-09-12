@@ -21,7 +21,7 @@ top_support_offset = 0.25 * M
 side_support_offset = 0.1 * M
 brace_offset = 0.5 * M
 
-side_support_adjustment = (1 - (back_inset/height)) * 30
+side_support_adjustment = (back_inset/height) * 250
 
 points = [(0,0,0),
           (back_inset,front_offset,height),
