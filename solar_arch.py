@@ -62,6 +62,20 @@ class ArchFoot(BasePartObject):
                     Hole(radius=bolt_hole_diameter/2,depth=thickness)
         super().__init__(part=foot.part, rotation=rotation, align=align, mode=mode)
 
+class Padeye(BasePartObject):
+    def __init__(
+        self,
+        size: float = 6,
+        diameter: float = 25,
+        rotation: RotationLike = (0, 0, 0),
+        align: tuple[Align, Align, Align] = (Align.CENTER, Align.MIN, Align.CENTER),
+        mode: Mode = Mode.ADD,
+    ):
+    
+        with BuildPart() as padeye:
+            Torus(major_radius=diameter/2, minor_radius=size/2,major_angle=180,
+                  rotation=rotation, align=align, mode=mode)
+        super().__init__(part=padeye.part, rotation=rotation, align=align, mode=mode)
 
 
 with BuildPart() as arch:
@@ -141,6 +155,15 @@ with BuildPart() as arch2:
         Circle(tube_id/2,mode=Mode.SUBTRACT)
     sweep(path=brace_frame)
 
+    a1 = back_frame.line.edges().sort_by(Axis.Z)[-1]
+    p1 = a1.position_at(brace_offset + 50,position_mode=PositionMode.LENGTH)
+    print(p1)
+    p1 = p1.add((0,tube_od/2,0))
+    print(p1)
+    with Locations(p1):
+        add(Padeye(rotation=(0,0,0)))
+
+
     mirror(about=Plane(origin=(width/2,0,0),z_dir=(1,0,0)))
 
 
@@ -153,7 +176,9 @@ with BuildPart() as arch2:
         Circle(tube_id/2,mode=Mode.SUBTRACT)
     sweep(path=center_support_frame)
 
+#eye = Padeye()
 
+#show(eye)
 show(arch2)
-export_stl(arch2.part,'arch.stl')
+#export_stl(arch2.part,'arch.stl')
 
