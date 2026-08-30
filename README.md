@@ -55,6 +55,12 @@ This builds the model, sends it to the 3D viewer (`show(arch2)`), and writes `ar
 
   Open that URL, then run `solar_arch.py` — the model appears in the browser.
 
+> **Version pairing:** the `ocp-vscode` Python package and the *OCP CAD Viewer*
+> VSCode extension are released in lockstep and must match (currently 4.0.1).
+> If `show()` fails with `KeyError` (e.g. `'none'` or `0`) in `config.status()`,
+> your Python package and extension versions are out of sync — upgrade the
+> Python side with `pip install -U ocp-vscode==<extension version>`.
+
 Save a PNG of the current view:
 
 ```python
