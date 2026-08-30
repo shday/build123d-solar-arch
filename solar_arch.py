@@ -156,12 +156,9 @@ with BuildPart() as arch2:
     sweep(path=brace_frame)
 
     a1 = back_frame.line.edges().sort_by(Axis.Z)[-1]
-    p1 = a1.position_at(brace_offset + 50,position_mode=PositionMode.LENGTH)
-    print(p1)
-    p1 = p1.add((0,tube_od/2,0))
-    print(p1)
+    p1 = a1.position_at(brace_offset + 50,position_mode=PositionMode.LENGTH).add((0,tube_od/2,0))
     with Locations(p1):
-        add(Padeye(rotation=(0,0,0)))
+        Padeye(rotation=(0,0,0))
 
 
     mirror(about=Plane(origin=(width/2,0,0),z_dir=(1,0,0)))
@@ -176,9 +173,6 @@ with BuildPart() as arch2:
         Circle(tube_id/2,mode=Mode.SUBTRACT)
     sweep(path=center_support_frame)
 
-#eye = Padeye()
-
-#show(eye)
 show(arch2)
-#export_stl(arch2.part,'arch.stl')
+export_stl(arch2.part,'arch.stl')
 
