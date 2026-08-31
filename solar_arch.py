@@ -196,6 +196,7 @@ with BuildPart() as arch2:
 
 show(arch2)
 export_stl(arch2.part,'arch.stl')
+save_screenshot('arch.png')
 
 mass_kg = part_mass(arch2.part)
 feet_kg = 2 * volume_mass(front_foot_volume) + 2 * volume_mass(back_foot_volume)

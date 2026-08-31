@@ -35,7 +35,7 @@ conda activate ocp
 python solar_arch.py
 ```
 
-This builds the model, sends it to the 3D viewer (`show(arch2)`), and writes `arch.stl` (`export_stl`).
+This builds the model, sends it to the 3D viewer (`show(arch2)`), and writes `arch.stl` (`export_stl`) plus `arch.png` (`save_screenshot`, requires the viewer to be open).
 
 > **No conda on PATH?** Conda isn't initialized in your shell yet. Either run once
 > `<conda-prefix>/bin/conda init zsh` (e.g. `/Users/stephenday/miniconda3/bin/conda init zsh`),
@@ -61,11 +61,11 @@ This builds the model, sends it to the 3D viewer (`show(arch2)`), and writes `ar
 > your Python package and extension versions are out of sync — upgrade the
 > Python side with `pip install -U ocp-vscode==<extension version>`.
 
-Save a PNG of the current view:
+The script saves `arch.png` automatically at the end of each run (`save_screenshot`), so the preview stays in sync with the model. To capture a different view manually:
 
 ```python
 from ocp_vscode import save_screenshot
-save_screenshot("arch.png")     # saved relative to the process working directory
+save_screenshot("other.png")    # saved relative to the process working directory
 ```
 
 Or use the camera/screenshot button in the viewer toolbar.
