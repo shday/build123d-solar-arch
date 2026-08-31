@@ -10,9 +10,9 @@ A 3.5 m wide portal-style frame made of 40 mm round tube (2 mm wall), with:
 
 - **Front and back frames** — near-vertical legs with filleted corners (R200) and horizontal top rails at 2 m
 - **ArchFeet** — Ø100 × 8 mm base plates with a Ø30 centre hole and 3× Ø8.5 bolt holes (PCD 75)
-- **Top support & center support** — crossbars spanning front ↔ back at the top
-- **Two sloped side rails** — parallel rails near the base of the legs (intended panel-mounting rails)
-- **Diagonal brace** — bracing in the plane of the back frame
+- **Top support & center support** — Ø25 crossbars spanning front ↔ back at the top
+- **Two sloped side rails** — Ø25 parallel rails near the base of the legs (intended panel-mounting rails)
+- **Diagonal brace** — Ø25 bracing in the plane of the back frame
 - **Two padeyes** — Ø25 half-torus lifting lugs on the outside of the back top rail
 - The half-model is mirrored about mid-span for a symmetric structure
 
@@ -84,7 +84,8 @@ All dimensions are in **millimetres** (`M` = 1000, `MM` = 1). Edit the constants
 | `drop` | 0.2 m | back feet set below grade |
 | `back_foot_angle` | 40° | tilt of the back foot plates |
 | `front_offset` / `back_offset` | 0.5 / 0.3 m | forward lean of the front / back legs at the top |
-| `tube_od` / `wall_thickness` | 40 / 2 mm | tube outer diameter and wall thickness (ID 36 mm) |
+| `tube_od` / `wall_thickness` | 40 / 2 mm | frame tube outer diameter and wall thickness (ID 36 mm) |
+| `cross_member_od` | 25 mm | cross-member (top support, side rails, brace, center support) outer diameter (ID 21 mm) |
 | `bend_radius` | 200 mm | corner fillet radius (`5 × tube_od`) |
 | `top_support_offset` | 0.25 m | top crossbar position along the top rails |
 | `side_support_offset` | 0.1 m | side rails offset from the leg bottoms |

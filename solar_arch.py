@@ -15,6 +15,8 @@ back_offset = 0.3 * M
 tube_od = 40 * MM
 wall_thickness = 2 * MM
 tube_id = tube_od - wall_thickness * 2
+cross_member_od = 25 * MM
+cross_member_id = cross_member_od - wall_thickness * 2
 bend_radius = 5 * tube_od
 rise_rate = 0
 top_support_offset = 0.25 * M
@@ -132,8 +134,8 @@ with BuildPart() as arch2:
     p2 = back_frame.line.edges().sort_by(Axis.Z)[-1].position_at(top_support_offset,position_mode=PositionMode.LENGTH)
     l1 = Line([p1,p2])
     with BuildSketch(Plane(origin=l1 @ 0, z_dir=l1 % 0)) as top_support:
-        Circle(tube_od/2)
-        Circle(tube_id/2,mode=Mode.SUBTRACT)
+        Circle(cross_member_od/2)
+        Circle(cross_member_id/2,mode=Mode.SUBTRACT)
     sweep(path=l1)
 
 
@@ -144,8 +146,8 @@ with BuildPart() as arch2:
         p2 = a2.position_at(a2.length - side_support_offset,position_mode=PositionMode.LENGTH)
         l1 = Line([p1,p2])
     with BuildSketch(Plane(origin=l1 @ 0, z_dir=l1 % 0)) as top_support:
-        Circle(tube_od/2)
-        Circle(tube_id/2,mode=Mode.SUBTRACT)
+        Circle(cross_member_od/2)
+        Circle(cross_member_id/2,mode=Mode.SUBTRACT)
     sweep(path=side_support_frame)
 
     with BuildLine() as side_support_frame:
@@ -155,8 +157,8 @@ with BuildPart() as arch2:
         p2 = a2.position_at(a2.length - side_support_offset - 0.5*M,position_mode=PositionMode.LENGTH)
         l1 = Line([p1,p2])
     with BuildSketch(Plane(origin=l1 @ 0, z_dir=l1 % 0)) as top_support:
-        Circle(tube_od/2)
-        Circle(tube_id/2,mode=Mode.SUBTRACT)
+        Circle(cross_member_od/2)
+        Circle(cross_member_id/2,mode=Mode.SUBTRACT)
     sweep(path=side_support_frame)
 
 
@@ -167,8 +169,8 @@ with BuildPart() as arch2:
         p2 = a2.position_at(brace_offset,position_mode=PositionMode.LENGTH)
         l1 = Line([p1,p2])
     with BuildSketch(Plane(origin=l1 @ 0, z_dir=l1 % 0)) as brace:
-        Circle(tube_od/2)
-        Circle(tube_id/2,mode=Mode.SUBTRACT)
+        Circle(cross_member_od/2)
+        Circle(cross_member_id/2,mode=Mode.SUBTRACT)
     sweep(path=brace_frame)
 
     a1 = back_frame.line.edges().sort_by(Axis.Z)[-1]
@@ -188,8 +190,8 @@ with BuildPart() as arch2:
         p2 = back_frame.line.edges().sort_by(Axis.Z)[-1].position_at(1)
         l1 = Line([p1,p2])
     with BuildSketch(Plane(origin=l1 @ 0, z_dir=l1 % 0)) as center_support_sk:
-        Circle(tube_od/2)
-        Circle(tube_id/2,mode=Mode.SUBTRACT)
+        Circle(cross_member_od/2)
+        Circle(cross_member_id/2,mode=Mode.SUBTRACT)
     sweep(path=center_support_frame)
 
 show(arch2)
