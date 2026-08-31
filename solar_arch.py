@@ -161,7 +161,10 @@ with BuildPart() as arch2:
         Padeye(rotation=(0,0,0))
 
 
-    mirror(about=Plane(origin=(width/2,0,0),z_dir=(1,0,0)))
+    # NOTE: the generic mirror() op deepcopies the part, and in build123d 0.11.1
+    # deepcopy corrupts this geometry's curve parameters ("Geom_TrimmedCurve::
+    # parameters out of range"). Mirror via the method (no deepcopy) and add() it.
+    add(arch2.part.mirror(Plane(origin=(width/2,0,0),z_dir=(1,0,0))))
 
 
     with BuildLine() as center_support_frame:

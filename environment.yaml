@@ -89,9 +89,10 @@ dependencies:
       - appnope==0.1.4
       - asttokens==3.0.0
       - blinker==1.9.0
-      - build123d==0.9.2.dev253+g790f0eace
+      - build123d==0.11.1
       - cachetools==5.5.2
-      - cadquery-ocp==7.8.1.1.post1
+      - cadquery-ocp-novtk==7.9.3.1.1
+      - cadquery-ocp-proxy==7.9.3.1.1
       - cadquery-vtk==9.3.1
       - click==8.2.1
       - comm==0.2.3
@@ -111,6 +112,7 @@ dependencies:
       - itsdangerous==2.2.0
       - jedi==0.19.2
       - jinja2==3.1.6
+      - joblib==1.5.3
       - jupyter-client==8.6.3
       - jupyter-core==5.8.1
       - lib3mf==2.4.1
@@ -119,11 +121,13 @@ dependencies:
       - matplotlib-inline==0.1.7
       - mpmath==1.3.0
       - mypy-extensions==1.1.0
+      - narwhals==2.25.0
       - nest-asyncio==1.6.0
       - numpy==2.3.2
+      - ocp-gordon==0.2.2
       - ocp-tessellate==3.4.1
       - ocp-vscode==4.0.1
-      - ocpsvg==0.5.0
+      - ocpsvg==0.6.0
       - orjson==3.11.3
       - parso==0.8.5
       - pexpect==4.9.0
@@ -143,6 +147,7 @@ dependencies:
       - pyyaml==6.0.2
       - pyzmq==27.0.2
       - questionary==2.1.1
+      - scikit-learn==1.9.0
       - scipy==1.16.1
       - simple-websocket==1.1.0
       - six==1.17.0
@@ -151,6 +156,7 @@ dependencies:
       - svgpathtools==1.7.1
       - svgwrite==1.4.3
       - sympy==1.14.0
+      - threadpoolctl==3.6.0
       - threejs-materials==1.2.3
       - tornado==6.5.2
       - traitlets==5.14.3

@@ -20,7 +20,7 @@ Current export: `arch.stl`, ~7.2 MB, ~144k triangles.
 
 ## Requirements
 
-- Python 3.13 + conda environment `ocp` (build123d, cadquery-ocp, ocp-vscode, numpy, …)
+- Python 3.13 + conda environment `ocp` (build123d 0.11.1, cadquery-ocp-novtk, ocp-vscode, numpy, …)
 
 Create the environment:
 
@@ -103,10 +103,11 @@ LICENSE            Apache License 2.0
 
 ## Known issues
 
-- **build123d dev build quirk:** in the pinned build (`0.9.2.dev253`), `add(shape)` inside
-  `with Locations(...):` re-applies the location and duplicates the shape at 2× the position.
-  The padeyes use the safe pattern — constructing the object directly inside the
-  `Locations` block (auto-add) — so keep that pattern when adding new parts.
+- **build123d 0.11.1 mirror bug:** the generic `mirror()` operation deep-copies the
+  part internally, and on this geometry the copy corrupts trimmed-curve parameters
+  (OCCT `Geom_TrimmedCurve::parameters out of range`). The script therefore mirrors
+  via `arch2.part.mirror(plane)` (no copy) and `add()`s the result — keep that
+  pattern for any new mirroring.
 - `rise_rate` and the `TangentArc` branch are experimental; `back_foot_angle` and the
   `faces().sort_by(Axis.Z)[-4]` foot split index are empirical values.
 
