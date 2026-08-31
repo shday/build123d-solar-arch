@@ -6,7 +6,7 @@ Parametric 3D model of a ground-mount **solar panel support arch**, generated in
 
 ## The model
 
-A 3.5 m wide portal-style frame made of 40 mm round tube (3 mm wall), with:
+A 3.5 m wide portal-style frame made of 40 mm round tube (2 mm wall), with:
 
 - **Front and back frames** — near-vertical legs with filleted corners (R200) and horizontal top rails at 2 m
 - **ArchFeet** — Ø100 × 8 mm base plates with a Ø30 centre hole and 3× Ø8.5 bolt holes (PCD 75)
@@ -84,7 +84,7 @@ All dimensions are in **millimetres** (`M` = 1000, `MM` = 1). Edit the constants
 | `drop` | 0.2 m | back feet set below grade |
 | `back_foot_angle` | 40° | tilt of the back foot plates |
 | `front_offset` / `back_offset` | 0.5 / 0.3 m | forward lean of the front / back legs at the top |
-| `tube_od` / `wall_thickness` | 40 / 3 mm | tube outer diameter and wall thickness (ID 34 mm) |
+| `tube_od` / `wall_thickness` | 40 / 2 mm | tube outer diameter and wall thickness (ID 36 mm) |
 | `bend_radius` | 200 mm | corner fillet radius (`5 × tube_od`) |
 | `top_support_offset` | 0.25 m | top crossbar position along the top rails |
 | `side_support_offset` | 0.1 m | side rails offset from the leg bottoms |
