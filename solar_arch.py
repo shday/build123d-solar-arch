@@ -23,6 +23,20 @@ brace_offset = 0.5 * M
 
 side_support_adjustment = (back_inset/height) * 250
 
+# --- Mass estimation -----------------------------------------------------
+STEEL_DENSITY = 8.0  # g/cm³ — 316 stainless steel (≈8,000 kg/m³)
+
+def volume_mass(volume_mm3: float, density_g_cm3: float = STEEL_DENSITY) -> float:
+    """Mass in kg of a volume given in mm³ at a density given in g/cm³.
+
+    mm³ → cm³ is ÷1e3, then g → kg is ÷1e3, so kg = mm³ × g/cm³ / 1e6.
+    """
+    return volume_mm3 * density_g_cm3 / 1e6
+
+def part_mass(part: Part, density_g_cm3: float = STEEL_DENSITY) -> float:
+    """Estimate the mass of a part in kg (build123d volumes are in mm³)."""
+    return volume_mass(part.volume, density_g_cm3)
+
 points = [(0,0,0),
           (back_inset,front_offset,height),
           (back_inset+bend_radius,front_offset+ front_offset/height* bend_radius*rise_rate,height+bend_radius*rise_rate)]
@@ -89,6 +103,7 @@ with BuildPart() as arch:
         Circle(tube_id/2,mode=Mode.SUBTRACT)
     sweep(path=frame)
     af = ArchFoot(mode=Mode.PRIVATE)
+    front_foot_volume = af.volume  # capture before fusing into the frame
     tf = af.faces().sort_by(Axis.Z)[-1]  
     split(bisect_by=tf)
     add(af)
@@ -105,6 +120,7 @@ with BuildPart() as arch2:
     sweep(path=back_frame)
     with Locations(back_points[0]):
         af = ArchFoot(rotation=(-back_foot_angle,0,90),mode=Mode.PRIVATE)
+    back_foot_volume = af.volume  # capture before fusing into the frame
     tf = af.faces().sort_by(Axis.Z)[-4]  
     split(bisect_by=tf)
     add(af)
@@ -178,4 +194,10 @@ with BuildPart() as arch2:
 
 show(arch2)
 export_stl(arch2.part,'arch.stl')
+
+mass_kg = part_mass(arch2.part)
+feet_kg = 2 * volume_mass(front_foot_volume) + 2 * volume_mass(back_foot_volume)
+print(f"Estimated mass (316 stainless steel): {mass_kg:.1f} kg")
+print(f"  feet (4 x ArchFoot): {feet_kg:.2f} kg")
+print(f"  structure (everything else): {mass_kg - feet_kg:.1f} kg")
 
