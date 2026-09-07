@@ -6,12 +6,12 @@ Parametric 3D model of a **solar panel support arch**, generated in code with [b
 
 ## The model
 
-A 3.5 m wide portal-style frame made of 40 mm round tube (2 mm wall), with:
+A 3.1 m wide portal-style frame made of 40 mm round tube (2 mm wall), with:
 
-- **Front and back frames** — near-vertical legs with filleted corners (R200) and horizontal top rails at 2 m
+- **Front and back frames** — filleted corners (R200) with horizontal top rails at 2 m. The **front legs** rise x-plumb (vertical when viewed from ahead) from the deck up to `leg_bend_height` = 0.8 m, then lean inboard toward the top corner; the aft rake is continuous along the whole leg, so the side view is unchanged. The plumb lower run lines the legs up with the boat's existing stern rails
 - **ArchFeet** — Ø100 × 8 mm base plates with a Ø30 centre hole and 3× Ø8.5 bolt holes (PCD 75)
 - **Top support & center support** — Ø25 crossbars spanning front ↔ back at the top
-- **Two sloped side rails** — Ø25 parallel rails near the base of the legs (intended panel-mounting rails)
+- **Two sloped side rails** — Ø25 rails running between the front and back legs below the top rails (intended panel-mounting rails)
 - **Diagonal brace** — Ø25 bracing in the plane of the back frame
 - **Two padeyes** — Ø25 half-torus lifting lugs on the outside of the back top rail
 - The half-model is mirrored about mid-span for a symmetric structure
@@ -23,8 +23,9 @@ arch's own back feet* (`back_foot_angle`, `drop`), and the hull is carved so
 that plane becomes its aft top surface — the arch therefore always sits flush
 on the hull. See the `boat_*` / `deck_width_*` parameters.
 
-Current export: `arch.stl`, arch only (~7 MB, ~144k triangles); the context hull
-is never included.
+Current export: `arch.stl`, arch only (~16 MB, ~330k triangles — the STL mesh
+density roughly doubled when the plumb knee was added, an OCCT meshing artefact;
+geometry is unchanged in volume/fit checks); the context hull is never included.
 
 ## Requirements
 
@@ -109,14 +110,15 @@ All dimensions are in **millimetres** (`M` = 1000, `MM` = 1). Edit the constants
 
 | Parameter | Default | Description |
 |---|---|---|
-| `width` | 3.5 m | total span (x direction) |
-| `back_width` | 3.0 m | span between the back feet |
-| `back_inset` | 0.25 m | `(width − back_width) / 2`, leg inset from the outside |
+| `width` | 3.1 m | total span (x direction) |
+| `back_width` | 2.9 m | span between the back feet |
+| `back_inset` | 0.1 m | `(width − back_width) / 2`, leg inset from the outside |
 | `height` | 2.0 m | top rail height |
 | `depth` | 1.0 m | front-to-back depth of the frame |
 | `drop` | 0.2 m | how far the back feet sit below the deck/scoop crease (transom drop) |
 | `back_foot_angle` | 40° | tilt of the back foot plates — sets the transom/scoop slope the hull is built to |
-| `front_offset` / `back_offset` | 0.5 / 0.3 m | forward lean of the front / back legs at the top |
+| `front_offset` / `back_offset` | 0.5 / 0.3 m | aft rake of the front / back legs at the top |
+| `leg_bend_height` | 0.8 m | height above the deck where the front legs start leaning inboard (they rise x-plumb below this, for stern-rail alignment) |
 | `tube_od` / `wall_thickness` | 40 / 2 mm | frame tube outer diameter and wall thickness (ID 36 mm) |
 | `cross_member_od` | 25 mm | cross-member (top support, side rails, brace, center support) outer diameter (ID 21 mm) |
 | `bend_radius` | 200 mm | corner fillet radius (`5 × tube_od`) |
@@ -125,12 +127,12 @@ All dimensions are in **millimetres** (`M` = 1000, `MM` = 1). Edit the constants
 | `brace_offset` | 0.5 m | diagonal brace position along the back legs |
 | `rise_rate` | 0 | experimental crown rise (`TangentArc`); `0` = flat top |
 | `show_boat` | True | build & show the crude stern-context hull beside the arch |
-| `boat_cx` | 1.75 m | boat centreline x (`width/2`); hull symmetric about it |
-| `deck_width_aft` | 3.6 m | hull width at the aft end (`hull_aft_end`) |
-| `deck_width_fwd` | 4.0 m | hull width at the forward cut |
+| `boat_cx` | 1.55 m | boat centreline x (`width/2`); hull symmetric about it |
+| `deck_width_aft` | 3.0 m | hull width at the aft end (`hull_aft_end`) |
+| `deck_width_fwd` | 3.4 m | hull width at the forward cut |
 | `hull_aft_end` | 1.3 m | hull aft extent below the scoop surface |
-| `hull_len_aft` | 3.5 m | modeled hull length forward of the transom crease |
-| `hull_bottom_z` | −2.6 m | flat-bottom depth |
+| `hull_len_aft` | 1.5 m | modeled hull length forward of the transom crease |
+| `hull_bottom_z` | −1.0 m | flat-bottom depth |
 
 ## Project layout
 

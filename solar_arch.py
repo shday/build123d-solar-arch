@@ -1,5 +1,5 @@
 import sys
-from math import cos, sin, atan, pi
+from math import cos, sin, atan, tan, acos, pi
 from build123d import *
 from ocp_vscode import *
 
@@ -19,6 +19,13 @@ tube_id = tube_od - wall_thickness * 2
 cross_member_od = 25 * MM
 cross_member_id = cross_member_od - wall_thickness * 2
 bend_radius = 5 * tube_od
+# The front legs rise x-plumb (parallel to the Z axis when viewed from ahead)
+# from the deck up to leg_bend_height, then lean inboard toward the top corner.
+# The knee point keeps the continuous aft rake (dy/dz = front_offset/height),
+# so the side view is unchanged.  The plumb lower run lines the legs up with
+# the boat's existing (unmodelled) stern rails.  Keep this well below the
+# top-corner fillet zone (~1.8 m) for this geometry.
+leg_bend_height = 0.8 * M
 rise_rate = 0
 top_support_offset = 0.25 * M
 side_support_offset = 0.1 * M
@@ -29,8 +36,8 @@ side_support_adjustment = (back_inset/height) * 250
 # --- Crude sailboat stern context (visualization only, not exported) ----
 # The front arch feet (flat plates, bottom at z=0) sit on a horizontal deck
 # while the back feet (tilted by back_foot_angle, bottom at z=-drop) sit on
-# the sloping transom/scoop.  The hull widths below are sized so the 3.5 m
-# arch comes close to the hull edge (≈60 mm margin at the front feet).
+# the sloping transom/scoop.  The hull widths below are sized so the 3.1 m
+# arch comes close to the hull edge (≈30 mm margin at the front feet).
 boat_cx = width/2              # boat centreline (deck symmetric about it)
 deck_width_aft = 3.0 * M       # hull width at the aft end (y = hull_aft_end)
 deck_width_fwd = 3.4 * M       # hull width at the forward cut
@@ -53,13 +60,46 @@ def part_mass(part: Part, density_g_cm3: float = STEEL_DENSITY) -> float:
     """Estimate the mass of a part in kg (build123d volumes are in mm³)."""
     return volume_mass(part.volume, density_g_cm3)
 
-points = [(0,0,0),
-          (back_inset,front_offset,height),
-          (back_inset+bend_radius,front_offset+ front_offset/height* bend_radius*rise_rate,height+bend_radius*rise_rate)]
+def front_tail(corner_x):
+    """Path points after the front top corner: the flat-top centre point, or
+    the rise_rate crown point."""
+    if rise_rate:
+        return [(corner_x + bend_radius,
+                 front_offset + front_offset/height * bend_radius * rise_rate,
+                 height + bend_radius * rise_rate)]
+    return [(corner_x, front_offset, height),
+            (width/2, front_offset, height)]
+
+# The front leg path gains a knee at leg_bend_height: the lower run is pinned
+# to the foot's x (plumb when viewed from ahead) while y keeps raking aft at
+# the continuous rate front_offset/height, so the side view is unchanged.
+knee_y = front_offset / height * leg_bend_height
+
+# Keep the visible straight top span exactly where it is: the top-corner
+# vertex itself is trimmed away by the R200 corner fillet, so its x is nudged
+# (fixed-point) until the fillet tangency on the horizontal run matches the
+# pre-knee corner direction — the knee would otherwise move the tangency
+# ~6 mm inboard and shrink the span.
+corner_dir = Vector(back_inset, front_offset, height).normalized()
+span_tangent_x = back_inset + bend_radius * tan(acos(corner_dir.dot(Vector(1, 0, 0)))/2)
+corner_x = back_inset
+if not rise_rate:   # flat top: keep the straight span where it was
+    for _ in range(3):
+        probe_pts = [(0, 0, 0), (0, knee_y, leg_bend_height)] + front_tail(corner_x)
+        with BuildLine() as probe_line:
+            FilletPolyline(probe_pts, radius=bend_radius)
+        probe_span = next((e for e in probe_line.edges()
+                           if abs(e.start_point().Z - e.end_point().Z) < 1e-6
+                           and e.length > M), None)
+        if probe_span is None:
+            break
+        corner_x += span_tangent_x - probe_span.start_point().X
+        if abs(span_tangent_x - probe_span.start_point().X) < 0.05:
+            break
+
+points = [(0, 0, 0), (0, knee_y, leg_bend_height)] + front_tail(corner_x)
 if rise_rate:
     point2 = (width - points[-1][0], points[-1][1], points[-1][2])
-else:
-    points[2] = (width/2, points[-1][1], points[-1][2])
 
 back_points = [(back_inset,depth,-drop),
                (back_inset,depth + back_offset,height),
@@ -154,9 +194,19 @@ with BuildPart() as arch2:
     sweep(path=l1)
 
 
+    # Front side-rail anchors.  The knee splits the front leg's lowest straight
+    # edge (it now ends at ~0.8 m), so anchor on the leg's *upper* straight run
+    # to keep the rails at their established height just below the top corner.
+    front_rail_edge = max(
+        (e for e in frame.line.edges()
+         if e.geom_type is GeomType.LINE
+         and abs((e.end_point() - e.start_point()).Z / e.length) > 0.3
+         and e.length > 0.2*M),
+        key=lambda e: min(e.start_point().Z, e.end_point().Z))
     with BuildLine() as side_support_frame:
-        a1 = frame.line.edges().sort_by(Axis.Z)[0]
-        p1 = a1.position_at(a1.length -side_support_offset - side_support_adjustment,position_mode=PositionMode.LENGTH)
+        p1 = front_rail_edge.position_at(front_rail_edge.length
+                                         - side_support_offset - side_support_adjustment,
+                                         position_mode=PositionMode.LENGTH)
         a2 = back_frame.line.edges().sort_by(Axis.Z)[0]
         p2 = a2.position_at(a2.length - side_support_offset,position_mode=PositionMode.LENGTH)
         l1 = Line([p1,p2])
@@ -166,8 +216,9 @@ with BuildPart() as arch2:
     sweep(path=side_support_frame)
 
     with BuildLine() as side_support_frame:
-        a1 = frame.line.edges().sort_by(Axis.Z)[0]
-        p1 = a1.position_at(a1.length -side_support_offset - side_support_adjustment,position_mode=PositionMode.LENGTH)
+        p1 = front_rail_edge.position_at(front_rail_edge.length
+                                         - side_support_offset - side_support_adjustment,
+                                         position_mode=PositionMode.LENGTH)
         a2 = back_frame.line.edges().sort_by(Axis.Z)[0]
         p2 = a2.position_at(a2.length - side_support_offset - 0.5*M,position_mode=PositionMode.LENGTH)
         l1 = Line([p1,p2])
