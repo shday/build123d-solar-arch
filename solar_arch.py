@@ -1,4 +1,5 @@
-from math import cos, atan
+import sys
+from math import cos, sin, atan, pi
 from build123d import *
 from ocp_vscode import *
 
@@ -24,6 +25,19 @@ side_support_offset = 0.1 * M
 brace_offset = 0.5 * M
 
 side_support_adjustment = (back_inset/height) * 250
+
+# --- Crude sailboat stern context (visualization only, not exported) ----
+# The front arch feet (flat plates, bottom at z=0) sit on a horizontal deck
+# while the back feet (tilted by back_foot_angle, bottom at z=-drop) sit on
+# the sloping transom/scoop.  The hull widths below are sized so the 3.5 m
+# arch comes close to the hull edge (≈60 mm margin at the front feet).
+boat_cx = width/2              # boat centreline (deck symmetric about it)
+deck_width_aft = 3.4 * M       # hull width at the aft end (y = hull_aft_end)
+deck_width_fwd = 4.0 * M       # hull width at the forward cut
+hull_aft_end = 1.3 * M         # hull aft extent (below the scoop surface)
+hull_len_aft = 1.5 * M         # modeled length forward of the transom crease
+hull_bottom_z = -1.0 * M       # flat-bottom depth
+show_boat = True               # build & show the context hull beside the arch
 
 # --- Mass estimation -----------------------------------------------------
 STEEL_DENSITY = 8.0  # g/cm³ — 316 stainless steel (≈8,000 kg/m³)
@@ -123,6 +137,7 @@ with BuildPart() as arch2:
     with Locations(back_points[0]):
         af = ArchFoot(rotation=(-back_foot_angle,0,90),mode=Mode.PRIVATE)
     back_foot_volume = af.volume  # capture before fusing into the frame
+    back_foot_af = af  # kept so the boat hull can be built on its contact plane
     tf = af.faces().sort_by(Axis.Z)[-4]  
     split(bisect_by=tf)
     add(af)
@@ -194,13 +209,126 @@ with BuildPart() as arch2:
         Circle(cross_member_id/2,mode=Mode.SUBTRACT)
     sweep(path=center_support_frame)
 
-show(arch2)
+# --- Crude sailboat stern context model ----------------------------------
+# The arch's own feet define the boat's mounting surfaces: the front feet
+# (flat plates at z=0) sit on a horizontal deck, while the back feet (tilted
+# plates at y≈1.0 m, z=-drop) sit on the sloping transom/scoop.  Rather than
+# guess, measure the back foot's contact plane from the geometry just built
+# and make that plane the hull's aft scoop surface — the hull then always
+# matches the arch, whatever the parameters.
+if show_boat:
+    # bottom (contact) face of the back foot placed at back_points[0]
+    back_bottoms = [f for f in back_foot_af.faces()
+                    if f.geom_type is GeomType.PLANE
+                    and f.normal_at(f.center()).Z < -0.5]
+    if not back_bottoms:
+        raise RuntimeError("could not locate the back-foot bottom face "
+                           "(is back_foot_angle too small?)")
+    back_bottom = min(back_bottoms,
+                      key=lambda f: (f.center() - back_points[0]).length)
+    transom_plane = Plane(origin=back_bottom.center(),
+                          z_dir=-back_bottom.normal_at(back_bottom.center()))
+    tn = transom_plane.z_dir
+    if abs(tn.Y) < 0.01:
+        raise RuntimeError("back-foot plate is not tilted along the boat "
+                           "axis; keep back_foot_angle > 0 to build the hull")
+    # Y where the transom plane meets deck level z=0 (top edge of the scoop)
+    transom_edge_y = transom_plane.origin.Y - (tn.Z / tn.Y) * (0 - transom_plane.origin.Z)
+    y_cut = transom_edge_y - hull_len_aft
+
+    print(f"Boat context: transom plane origin "
+          f"({transom_plane.origin.X:.0f}, {transom_plane.origin.Y:.0f}, "
+          f"{transom_plane.origin.Z:.0f}) mm, normal "
+          f"({tn.X:.3f}, {tn.Y:.3f}, {tn.Z:.3f})")
+    print(f"  deck/scoop crease at y = {transom_edge_y/1000:.3f} m (z = 0), "
+          f"hull from y = {y_cut/1000:.3f} m to {hull_aft_end/1000:.3f} m")
+
+    with BuildPart() as boat:
+        with BuildSketch(Plane.XY):
+            Polygon((boat_cx - deck_width_aft/2, hull_aft_end),
+                    (boat_cx + deck_width_aft/2, hull_aft_end),
+                    (boat_cx + deck_width_fwd/2, y_cut),
+                    (boat_cx - deck_width_fwd/2, y_cut))
+        extrude(amount=hull_bottom_z)
+        # Carve off the wedge above the transom plane so the aft top of the
+        # hull is exactly the (scoop) plane the back feet rest on.
+        with Locations(transom_plane):
+            Box(length=10*M, width=10*M, height=2*M,
+                align=(Align.CENTER, Align.CENTER, Align.MIN),
+                mode=Mode.SUBTRACT)
+else:
+    boat = None
+
+# --- Viewer, export, screenshot ------------------------------------------
+if "--no-viewer" in sys.argv:
+    print("viewer skipped (--no-viewer)")
+elif show_boat:
+    try:
+        show(arch2, boat, names=["arch", "boat"],
+             colors=[(0.85, 0.85, 0.9), (0.10, 0.45, 0.72)],
+             alphas=[1.0, 0.85])
+    except Exception as exc:
+        print(f"viewer unavailable ({exc}); continuing without it")
+else:
+    show(arch2)
+
 export_stl(arch2.part,'arch.stl')
-save_screenshot('arch.png')
+
+if "--no-viewer" not in sys.argv:
+    try:
+        save_screenshot('arch.png')
+    except Exception as exc:
+        print(f"screenshot unavailable ({exc})")
 
 mass_kg = part_mass(arch2.part)
 feet_kg = 2 * volume_mass(front_foot_volume) + 2 * volume_mass(back_foot_volume)
 print(f"Estimated mass (316 stainless steel): {mass_kg:.1f} kg")
 print(f"  feet (4 x ArchFoot): {feet_kg:.2f} kg")
 print(f"  structure (everything else): {mass_kg - feet_kg:.1f} kg")
+if show_boat:
+    print(f"Boat context hull volume: {boat.part.volume/1e9:.1f} m^3")
+
+# --- Foot-to-hull fit check ----------------------------------------------
+foot_names = ["front (port)", "front (starboard)", "back (port)", "back (starboard)"]
+foot_centres = [Vector(0, 0, 0), Vector(width, 0, 0),
+                Vector(*back_points[0]),
+                Vector(width - back_inset, back_points[0][1], back_points[0][2])]
+
+if show_boat:
+    def deck_width_at(y):
+        """Hull planform width at a given y (trapezoid between the cuts)."""
+        return deck_width_aft + (deck_width_fwd - deck_width_aft) * \
+            (hull_aft_end - y) / (hull_aft_end - y_cut)
+
+    def plate_rim_points(face, radius=40, count=8):
+        """Points on the plate bottom face, `radius` mm out from its centre."""
+        c = face.center()
+        n = face.normal_at(c)
+        u = Vector(1, 0, 0) if abs(n.X) < 0.9 else Vector(0, 1, 0)
+        u = (u - u.dot(n) * n).normalized()
+        v = n.cross(u).normalized()
+        return [c + radius * (cos(2*pi*i/count) * u + sin(2*pi*i/count) * v)
+                for i in range(count)]
+
+    print("\nFoot-to-hull fit (mm; rim gap ≈ 0 means the plate lies on the hull):")
+    ok = True
+    for name, centre in zip(foot_names, foot_centres):
+        cands = [f for f in arch2.part.faces()
+                 if f.geom_type is GeomType.PLANE
+                 and (f.center() - centre).length < 25]
+        bottoms = [f for f in cands if f.normal_at(f.center()).Z < -0.5]
+        if not bottoms:
+            print(f"  {name}: NO bottom face found near "
+                  f"({centre.X:.0f}, {centre.Y:.0f}, {centre.Z:.0f})")
+            ok = False
+            continue
+        bf = min(bottoms, key=lambda f: (f.center() - centre).length)
+        gap = max(boat.part.distance_to(p) for p in plate_rim_points(bf))
+        margin = deck_width_at(centre.Y) / 2 - 50 - abs(centre.X - boat_cx)
+        flag = "" if gap < 0.5 and margin > 10 else "  <-- check!"
+        if flag:
+            ok = False
+        print(f"  {name}: rim gap {gap:.2f} mm, hull-edge margin "
+              f"{margin:.0f} mm{flag}")
+    print("  fit OK" if ok else "  !! foot/hull fit problems — adjust hull widths")
 
