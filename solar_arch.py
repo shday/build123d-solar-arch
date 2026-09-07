@@ -3,8 +3,8 @@ from math import cos, sin, atan, pi
 from build123d import *
 from ocp_vscode import *
 
-width= 3.5 * M
-back_width = 3.0 * M
+width= 3.1 * M
+back_width = 2.9 * M
 back_inset = (width - back_width)/2
 height = 2 * M
 depth = 1 * M
@@ -32,8 +32,8 @@ side_support_adjustment = (back_inset/height) * 250
 # the sloping transom/scoop.  The hull widths below are sized so the 3.5 m
 # arch comes close to the hull edge (≈60 mm margin at the front feet).
 boat_cx = width/2              # boat centreline (deck symmetric about it)
-deck_width_aft = 3.4 * M       # hull width at the aft end (y = hull_aft_end)
-deck_width_fwd = 4.0 * M       # hull width at the forward cut
+deck_width_aft = 3.0 * M       # hull width at the aft end (y = hull_aft_end)
+deck_width_fwd = 3.4 * M       # hull width at the forward cut
 hull_aft_end = 1.3 * M         # hull aft extent (below the scoop surface)
 hull_len_aft = 1.5 * M         # modeled length forward of the transom crease
 hull_bottom_z = -1.0 * M       # flat-bottom depth
