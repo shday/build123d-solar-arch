@@ -41,10 +41,14 @@ wing_od = 25 * MM                 # Ø25 tube, rail_wall_thickness wall like the
 wing_id = wing_od - rail_wall_thickness * 2
 wing_corner_radius = 75 * MM      # tight U corners (vs the arch's R200)
 top_support_offset = 0.25 * M
-side_support_offset = 0.1 * M
+# The Ø25 side rails run between the front and back legs, anchored at equal
+# heights on each leg so every rail is level and parallel to the top support,
+# whatever rake/tilt either leg has.  Three rails: one at side_rail_drop below
+# the top plane, one side_rail_bottom_height above the deck, and one halfway
+# between them.
+side_rail_drop = 0.2 * M
+side_rail_bottom_height = 1.0 * M   # lowest rail, 1 m above the deck
 brace_offset = 0.5 * M
-
-side_support_adjustment = (back_inset/height) * 250
 
 # --- Crude sailboat stern context (visualization only, not exported) ----
 # The front arch feet (flat plates, bottom at z=0) sit on a horizontal deck
@@ -72,6 +76,27 @@ def volume_mass(volume_mm3: float, density_g_cm3: float = STEEL_DENSITY) -> floa
 def part_mass(part: Part, density_g_cm3: float = STEEL_DENSITY) -> float:
     """Estimate the mass of a part in kg (build123d volumes are in mm³)."""
     return volume_mass(part.volume, density_g_cm3)
+
+def leg_point_at_height(line, z, label="leg"):
+    """Point on a frame leg's straight run at height z.
+
+    Legs are swept along straight runs that can be split by knee bends and the
+    top-corner fillet arcs, so anchor side members by absolute height rather
+    than along-edge offsets: this stays correct whatever rake or inward tilt
+    each leg has.  Picks the uppermost straight segment whose z-range spans z;
+    raises a clear error if z falls on a corner fillet or off the leg.
+    """
+    cands = [e for e in line.edges()
+             if e.geom_type is GeomType.LINE
+             and e.length > 0.2 * M
+             and abs((e.end_point() - e.start_point()).Z / e.length) > 0.3
+             and min(e.start_point().Z, e.end_point().Z) <= z <= max(e.start_point().Z, e.end_point().Z)]
+    if not cands:
+        raise ValueError(f"{label}: no straight run at z={z/MM:.0f} mm — pick a "
+                         "height on a straight leg section, below the top-corner fillets")
+    edge = max(cands, key=lambda e: min(e.start_point().Z, e.end_point().Z))
+    a, b = edge.start_point(), edge.end_point()
+    return a + (b - a) * ((z - a.Z) / (b.Z - a.Z))
 
 def front_tail(corner_x):
     """Path points after the front top corner: the flat-top centre point, or
@@ -207,38 +232,23 @@ with BuildPart() as arch2:
     sweep(path=l1)
 
 
-    # Front side-rail anchors.  The knee splits the front leg's lowest straight
-    # edge (it now ends at ~0.8 m), so anchor on the leg's *upper* straight run
-    # to keep the rails at their established height just below the top corner.
-    front_rail_edge = max(
-        (e for e in frame.line.edges()
-         if e.geom_type is GeomType.LINE
-         and abs((e.end_point() - e.start_point()).Z / e.length) > 0.3
-         and e.length > 0.2*M),
-        key=lambda e: min(e.start_point().Z, e.end_point().Z))
-    with BuildLine() as side_support_frame:
-        p1 = front_rail_edge.position_at(front_rail_edge.length
-                                         - side_support_offset - side_support_adjustment,
-                                         position_mode=PositionMode.LENGTH)
-        a2 = back_frame.line.edges().sort_by(Axis.Z)[0]
-        p2 = a2.position_at(a2.length - side_support_offset,position_mode=PositionMode.LENGTH)
-        l1 = Line([p1,p2])
-    with BuildSketch(Plane(origin=l1 @ 0, z_dir=l1 % 0)) as top_support:
-        Circle(cross_member_od/2)
-        Circle(cross_member_id/2,mode=Mode.SUBTRACT)
-    sweep(path=side_support_frame)
-
-    with BuildLine() as side_support_frame:
-        p1 = front_rail_edge.position_at(front_rail_edge.length
-                                         - side_support_offset - side_support_adjustment,
-                                         position_mode=PositionMode.LENGTH)
-        a2 = back_frame.line.edges().sort_by(Axis.Z)[0]
-        p2 = a2.position_at(a2.length - side_support_offset - 0.5*M,position_mode=PositionMode.LENGTH)
-        l1 = Line([p1,p2])
-    with BuildSketch(Plane(origin=l1 @ 0, z_dir=l1 % 0)) as top_support:
-        Circle(cross_member_od/2)
-        Circle(cross_member_id/2,mode=Mode.SUBTRACT)
-    sweep(path=side_support_frame)
+    # Level side rails between the front and back legs: the top rail (0.2 m
+    # below the top plane), the 1 m rail above the deck, and one halfway
+    # between them.  Each end is anchored at the same z on its leg, so every
+    # rail is level and parallel to the top support by construction.
+    rail_top_z = height - side_rail_drop
+    rail_bottom_z = side_rail_bottom_height
+    for rail_z in (rail_top_z,
+                   (rail_top_z + rail_bottom_z) / 2,
+                   rail_bottom_z):
+        p1 = leg_point_at_height(frame.line, rail_z, "front leg")
+        p2 = leg_point_at_height(back_frame.line, rail_z, "back leg")
+        with BuildLine() as side_rail_frame:
+            l1 = Line([p1,p2])
+        with BuildSketch(Plane(origin=l1 @ 0, z_dir=l1 % 0)) as side_rail_sk:
+            Circle(cross_member_od/2)
+            Circle(cross_member_id/2,mode=Mode.SUBTRACT)
+        sweep(path=side_rail_frame)
 
 
     with BuildLine() as brace_frame:

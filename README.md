@@ -12,7 +12,7 @@ A 3.1 m wide portal-style frame made of 40 mm round tube (2 mm wall), with:
 - **Top-plane wings** — U-shaped Ø25 extensions capping both ends of the top bay in the top plane (z = 2 m): the front/back top rails continue ~0.25 m outboard (`wing_extend`) and are joined by a round bar with tight R75 corners, so the wings + arch top form one rounded rectangle ≈ 3.0 m × 0.8 m — extra mounting length for solar panels and clamp points (e.g. a Starlink antenna)
 - **ArchFeet** — Ø100 × 8 mm base plates with a Ø30 centre hole and 3× Ø8.5 bolt holes (PCD 75)
 - **Top support & center support** — Ø25 crossbars spanning front ↔ back at the top
-- **Two sloped side rails** — Ø25 rails running between the front and back legs below the top rails (intended panel-mounting rails)
+- **Three side rails** per side — Ø25 panel-mounting rails running between the front and back legs at even heights: one at `side_rail_drop` below the top plane, one `side_rail_bottom_height` (1 m) above the deck, and one halfway between. Each rail is anchored at the same z on both legs, so every rail is level and parallel to the top support whatever rake/tilt the legs have
 - **Diagonal brace** — Ø25 bracing in the plane of the back frame
 - **Two padeyes** — Ø25 half-torus lifting lugs on the outside of the back top rail
 - The half-model is mirrored about mid-span for a symmetric structure
@@ -129,7 +129,8 @@ All dimensions are in **millimetres** (`M` = 1000, `MM` = 1). Edit the constants
 | `cross_member_od` | 25 mm | cross-member (top support, side rails, brace, center support) outer diameter (ID 22 mm at `rail_wall_thickness`) |
 | `bend_radius` | 200 mm | corner fillet radius (`5 × tube_od`) |
 | `top_support_offset` | 0.25 m | top crossbar position along the top rails |
-| `side_support_offset` | 0.1 m | side rails offset from the leg bottoms |
+| `side_rail_drop` | 0.2 m | how far below the top plane the top side rail sits (all rails are anchored at equal heights on both legs, so each is level by construction) |
+| `side_rail_bottom_height` | 1.0 m | height of the lowest side rail above the deck (the middle rail sits halfway between this and the top rail) |
 | `brace_offset` | 0.5 m | diagonal brace position along the back legs |
 | `rise_rate` | 0 | experimental crown rise (`TangentArc`); `0` = flat top |
 | `show_boat` | True | build & show the crude stern-context hull beside the arch |
