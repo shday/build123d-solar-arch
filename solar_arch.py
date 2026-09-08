@@ -27,6 +27,16 @@ bend_radius = 5 * tube_od
 # top-corner fillet zone (~1.8 m) for this geometry.
 leg_bend_height = 0.8 * M
 rise_rate = 0
+# U-shaped "wings" capping the two ends of the top panel bay, in the top plane
+# (z = height).  Each wing continues the front and back top rails ~wing_extend
+# outboard (widening the bay from ~2.5 m to ~3.0 m) and joins their ends with a
+# tight-radius round bar — extra mounting length for solar panels plus clamp
+# points (e.g. a Starlink antenna).  Wing legs fuse into the R200 corner fillets
+# where they meet the arch corners.
+wing_extend = 0.25 * M
+wing_od = 25 * MM                 # Ø25 tube, same wall as the rest of the arch
+wing_id = wing_od - wall_thickness * 2
+wing_corner_radius = 75 * MM      # tight U corners (vs the arch's R200)
 top_support_offset = 0.25 * M
 side_support_offset = 0.1 * M
 brace_offset = 0.5 * M
@@ -243,6 +253,37 @@ with BuildPart() as arch2:
     p1 = a1.position_at(brace_offset + 50,position_mode=PositionMode.LENGTH).add((0,tube_od/2,0))
     with Locations(p1):
         Padeye(rotation=(0,0,0))
+
+
+    # --- Top-plane "wings" (port wing; the mirror below adds the starboard one) ---
+    # Each wing continues the front & back top rails ~wing_extend outboard and
+    # joins their ends with a tight (wing_corner_radius) round bar, all in the
+    # top plane z = height, so wings + arch top form one rounded rectangle for
+    # panel/antenna mounting.  The legs' inboard stretch fuses into the R200
+    # corner fillets of the arch (welded-corner junction).  Flat top only: the
+    # experimental rise_rate crown has no straight dock edge to extend.
+    if not rise_rate:
+        def _span_start(line):
+            """Port end of a frame's horizontal top-span straight edge."""
+            return next(e for e in line.edges()
+                        if e.geom_type is GeomType.LINE
+                        and abs(e.start_point().Z - e.end_point().Z) < 1e-6
+                        and e.length > M).start_point()
+
+        dock_front = _span_start(frame.line)     # front rail port tangency
+        dock_back = _span_start(back_frame.line)  # back rail port tangency
+        x_outer = dock_front.X - wing_extend
+        with BuildLine() as wing_frame:
+            FilletPolyline([dock_front,
+                            (x_outer, dock_front.Y, dock_front.Z),
+                            (x_outer, dock_back.Y, dock_back.Z),
+                            dock_back],
+                           radius=wing_corner_radius)
+        with BuildSketch(Plane(origin=wing_frame.line @ 0,
+                               z_dir=wing_frame.line % 0)) as wing_sk:
+            Circle(wing_od/2)
+            Circle(wing_id/2, mode=Mode.SUBTRACT)
+        sweep(path=wing_frame)
 
 
     # NOTE: the generic mirror() op deepcopies the part, and in build123d 0.11.1

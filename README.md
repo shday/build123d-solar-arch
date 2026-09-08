@@ -9,6 +9,7 @@ Parametric 3D model of a **solar panel support arch**, generated in code with [b
 A 3.1 m wide portal-style frame made of 40 mm round tube (2 mm wall), with:
 
 - **Front and back frames** — filleted corners (R200) with horizontal top rails at 2 m. The **front legs** rise x-plumb (vertical when viewed from ahead) from the deck up to `leg_bend_height` = 0.8 m, then lean inboard toward the top corner; the aft rake is continuous along the whole leg, so the side view is unchanged. The plumb lower run lines the legs up with the boat's existing stern rails
+- **Top-plane wings** — U-shaped Ø25 extensions capping both ends of the top bay in the top plane (z = 2 m): the front/back top rails continue ~0.25 m outboard (`wing_extend`) and are joined by a round bar with tight R75 corners, so the wings + arch top form one rounded rectangle ≈ 3.0 m × 0.8 m — extra mounting length for solar panels and clamp points (e.g. a Starlink antenna)
 - **ArchFeet** — Ø100 × 8 mm base plates with a Ø30 centre hole and 3× Ø8.5 bolt holes (PCD 75)
 - **Top support & center support** — Ø25 crossbars spanning front ↔ back at the top
 - **Two sloped side rails** — Ø25 rails running between the front and back legs below the top rails (intended panel-mounting rails)
@@ -23,9 +24,10 @@ arch's own back feet* (`back_foot_angle`, `drop`), and the hull is carved so
 that plane becomes its aft top surface — the arch therefore always sits flush
 on the hull. See the `boat_*` / `deck_width_*` parameters.
 
-Current export: `arch.stl`, arch only (~16 MB, ~330k triangles — the STL mesh
-density roughly doubled when the plumb knee was added, an OCCT meshing artefact;
-geometry is unchanged in volume/fit checks); the context hull is never included.
+Current export: `arch.stl`, arch only (~22 MB, ~440k triangles — the STL mesh
+density inflated after the plumb knee and wings were added, an OCCT meshing
+artefact; geometry is unchanged in volume/fit checks); the context hull is never
+included.
 
 ## Requirements
 
@@ -119,6 +121,9 @@ All dimensions are in **millimetres** (`M` = 1000, `MM` = 1). Edit the constants
 | `back_foot_angle` | 40° | tilt of the back foot plates — sets the transom/scoop slope the hull is built to |
 | `front_offset` / `back_offset` | 0.5 / 0.3 m | aft rake of the front / back legs at the top |
 | `leg_bend_height` | 0.8 m | height above the deck where the front legs start leaning inboard (they rise x-plumb below this, for stern-rail alignment) |
+| `wing_extend` | 0.25 m | how far the top-plane wings extend outboard past the top rail ends |
+| `wing_od` | 25 mm | wing tube outer diameter (ID 21 mm, same wall as the rest) |
+| `wing_corner_radius` | 75 mm | tight radius of the wings' U corners (vs the arch's R200) |
 | `tube_od` / `wall_thickness` | 40 / 2 mm | frame tube outer diameter and wall thickness (ID 36 mm) |
 | `cross_member_od` | 25 mm | cross-member (top support, side rails, brace, center support) outer diameter (ID 21 mm) |
 | `bend_radius` | 200 mm | corner fillet radius (`5 × tube_od`) |
