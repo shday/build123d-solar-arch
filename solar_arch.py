@@ -14,10 +14,13 @@ back_foot_angle = 40
 front_offset = 0.5 * M
 back_offset = 0.3 * M
 tube_od = 40 * MM
-wall_thickness = 2 * MM
+wall_thickness = 2 * MM          # structural arch tubes (Ø40 frames)
 tube_id = tube_od - wall_thickness * 2
+# Wall of the Ø25 secondary members (cross members, side supports, wings);
+# lighter than the structural arch tubes above.
+rail_wall_thickness = 1.5 * MM
 cross_member_od = 25 * MM
-cross_member_id = cross_member_od - wall_thickness * 2
+cross_member_id = cross_member_od - rail_wall_thickness * 2
 bend_radius = 5 * tube_od
 # The front legs rise x-plumb (parallel to the Z axis when viewed from ahead)
 # from the deck up to leg_bend_height, then lean inboard toward the top corner.
@@ -33,9 +36,9 @@ rise_rate = 0
 # tight-radius round bar — extra mounting length for solar panels plus clamp
 # points (e.g. a Starlink antenna).  Wing legs fuse into the R200 corner fillets
 # where they meet the arch corners.
-wing_extend = 0.25 * M
-wing_od = 25 * MM                 # Ø25 tube, same wall as the rest of the arch
-wing_id = wing_od - wall_thickness * 2
+wing_extend = 0.3 * M
+wing_od = 25 * MM                 # Ø25 tube, rail_wall_thickness wall like the cross members
+wing_id = wing_od - rail_wall_thickness * 2
 wing_corner_radius = 75 * MM      # tight U corners (vs the arch's R200)
 top_support_offset = 0.25 * M
 side_support_offset = 0.1 * M

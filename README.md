@@ -122,10 +122,11 @@ All dimensions are in **millimetres** (`M` = 1000, `MM` = 1). Edit the constants
 | `front_offset` / `back_offset` | 0.5 / 0.3 m | aft rake of the front / back legs at the top |
 | `leg_bend_height` | 0.8 m | height above the deck where the front legs start leaning inboard (they rise x-plumb below this, for stern-rail alignment) |
 | `wing_extend` | 0.25 m | how far the top-plane wings extend outboard past the top rail ends |
-| `wing_od` | 25 mm | wing tube outer diameter (ID 21 mm, same wall as the rest) |
+| `wing_od` | 25 mm | wing tube outer diameter (ID 22 mm at `rail_wall_thickness`) |
 | `wing_corner_radius` | 75 mm | tight radius of the wings' U corners (vs the arch's R200) |
 | `tube_od` / `wall_thickness` | 40 / 2 mm | frame tube outer diameter and wall thickness (ID 36 mm) |
-| `cross_member_od` | 25 mm | cross-member (top support, side rails, brace, center support) outer diameter (ID 21 mm) |
+| `rail_wall_thickness` | 1.5 mm | wall of the Ø25 secondary members (cross members, side supports, wings) |
+| `cross_member_od` | 25 mm | cross-member (top support, side rails, brace, center support) outer diameter (ID 22 mm at `rail_wall_thickness`) |
 | `bend_radius` | 200 mm | corner fillet radius (`5 × tube_od`) |
 | `top_support_offset` | 0.25 m | top crossbar position along the top rails |
 | `side_support_offset` | 0.1 m | side rails offset from the leg bottoms |
